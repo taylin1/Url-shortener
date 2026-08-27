@@ -72,3 +72,7 @@ npm run dev
 - **Server**: Express.js
 - **Database**: Supabase (PostgreSQL)
 - **Auth**: Supabase Auth
+
+## Database
+- `links` — stores shortened URLs per user
+- `clicks` — stores click events for analytics
