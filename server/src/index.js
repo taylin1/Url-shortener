@@ -1,6 +1,6 @@
-require('dotenv').config()
+require('dotenv').config();
 
-const express = require('express')
+const express = require('express');
 const cors = require('cors')
 
 const shortenRoute = require('./routes/shorten')
@@ -30,4 +30,4 @@ app.listen(PORT, function () {
   console.log(`Server running on port ${PORT}`)
 })
 
-module.exports = app
+module.exports = app;
