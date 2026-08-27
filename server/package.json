@@ -1,7 +1,6 @@
 {
   "name": "link-shortener-server",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
