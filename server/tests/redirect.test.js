@@ -1,8 +1,1 @@
-import { describe, it, expect } from 'vitest';
 
-describe('GET /:code', () => {
-  it('should redirect to original URL', async () => {
-    // TODO: Implement test
-    expect(true).toBe(true);
-  });
-});
