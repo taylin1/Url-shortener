@@ -1,4 +1,4 @@
-const supabase = require('../lib/supabaseClient');
+const supabase = require('../supabaseClient');
 
 async function verifyToken(req, res, next) {
   // Every HTTP request can carry headers — key value pairs that contain metadata about the request. The .authorization header is the standard place to put authentication tokens. We read it here.
@@ -15,6 +15,7 @@ async function verifyToken(req, res, next) {
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
     if (error || !user) {
+      //401 is the HTTP status code for Unauthorized. Any time we reject a request because of missing or invalid auth we return 401.
       return res.status(401).json({ error: 'Invalid token' });
     }
 

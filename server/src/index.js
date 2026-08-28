@@ -1,13 +1,13 @@
-require('dotenv').config();
+require('dotenv').config(); // Loads the .env file into process.env
 
 const express = require('express');
 const cors = require('cors')
 
-const shortenRoute = require('./routes/shorten')
-const redirectRoute = require('./routes/redirect')
-const linksRoute = require('./routes/links')
+const shortenRoute = require('./routes/shorten');
+const redirectRoute = require('./routes/redirect');
+const linksRoute = require('./routes/links');
 
-const app = express()
+const app = express();
 const PORT = process.env.PORT || 3001
 
 // Middleware
