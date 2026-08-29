@@ -1,24 +1,19 @@
-import { useState } from 'react';
 import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 
 function App() {
-  // Simple page state manager for preview toggle ('login' or 'signup')
-  const [currentPage, setCurrentPage] = useState('login');
-
-  const handleNavigate = (page) => {
-    setCurrentPage(page);
-  };
-
   return (
-    <div className="w-full min-h-screen bg-[#030712]">
-      {currentPage === 'login' ? (
-        <LoginPage onNavigate={handleNavigate} />
-      ) : (
-        <SignupPage onNavigate={handleNavigate} />
-      )}
-    </div>
+    <Router>
+      <div className="w-full min-h-screen bg-[#030712]">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/" element={<LoginPage />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

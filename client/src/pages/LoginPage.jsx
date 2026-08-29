@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-export default function LoginPage({ onNavigate }) {
+export default function LoginPage() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -160,7 +162,7 @@ export default function LoginPage({ onNavigate }) {
             <p className="text-sm text-slate-500">
               Don't have an account?{' '}
               <button
-                onClick={() => onNavigate('signup')}
+                onClick={() => navigate('/signup')}
                 className="text-cyan-400/80 hover:text-cyan-400 font-bold hover:underline transition-colors"
               >
                 Sign up

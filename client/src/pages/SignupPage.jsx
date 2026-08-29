@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-export default function SignupPage({ onNavigate }) {
+export default function SignupPage() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -178,7 +180,7 @@ export default function SignupPage({ onNavigate }) {
             <p className="text-sm text-slate-500">
               Already have an account?{' '}
               <button
-                onClick={() => onNavigate('login')}
+                onClick={() => navigate('/login')}
                 className="text-cyan-400/80 hover:text-cyan-400 font-bold hover:underline transition-colors"
               >
                 Login
