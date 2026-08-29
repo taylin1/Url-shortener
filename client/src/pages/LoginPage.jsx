@@ -83,6 +83,7 @@ export default function LoginPage({ onNavigate }) {
 
           {/* Form Header */}
           <div className="mb-8 text-center">
+            <h1 className="text-cay">Url Shortener</h1>
             <h1 className="text-2xl font-bold uppercase tracking-wider text-slate-100">
               Login
             </h1>
