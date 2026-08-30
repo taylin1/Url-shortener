@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase} from "../supabaseClient";
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -7,10 +8,19 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    console.log('Signup submitted:', { email, password, confirmPassword });
+    setError(null);
+
+    const {error} = await supabase.auth.signUp({email,password});
+
+    if(error){
+      setError(error.message);
+    }else{
+      navigate('/login');
+    }
   };
 
   return (

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -7,9 +8,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login submitted:', { email, password });
+    setError(null);
+    setLoading(true);
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      navigate('/dashboard');
+    }
+    setLoading(false);
   };
 
   return (
@@ -85,8 +99,8 @@ export default function LoginPage() {
 
           {/* Form Header */}
           <div className="mb-8 text-center">
-            <h1 className="text-cay">Url Shortener</h1>
-            <h1 className="text-2xl font-bold uppercase tracking-wider text-slate-100">
+            <h1 className="text-cyan-400 text-sm font-semibold tracking-widest uppercase">Url Shortener</h1>
+            <h1 className="text-2xl font-bold uppercase tracking-wider text-slate-100 mt-2">
               Login
             </h1>
             <p className="mt-2 text-sm text-slate-400">
@@ -141,16 +155,24 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2">
+                {error}
+              </div>
+            )}
+
             {/* Login Button */}
             <div className="pt-4">
               <button
                 type="submit"
-                className="w-full relative py-3 px-6 rounded-lg bg-transparent border border-cyan-400/60 overflow-hidden font-semibold tracking-wide text-sm uppercase text-cyan-300 hover:text-white transition-colors duration-300 group"
+                disabled={loading}
+                className="w-full relative py-3 px-6 rounded-lg bg-transparent border border-cyan-400/60 overflow-hidden font-semibold tracking-wide text-sm uppercase text-cyan-300 hover:text-white transition-colors duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/10 to-blue-600/10 opacity-30 group-hover:opacity-100 transition-all duration-300 -z-10" />
                 <div className="absolute top-0 left-0 -translate-x-full group-hover:translate-x-full w-full h-full bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent transition-all duration-1000 ease-out" />
                 <span className="relative" style={{ textShadow: '0 0 6px rgba(34,211,238,0.2)' }}>
-                  Login
+                  {loading ? 'Signing in...' : 'Login'}
                 </span>
               </button>
             </div>

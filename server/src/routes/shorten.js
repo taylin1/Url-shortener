@@ -66,3 +66,5 @@ router.post('/', verifyToken, async function (req, res) {
 })
 
 module.exports = router;
+module.exports.generateShortCode = generateShortCode;
+module.exports.isValidUrl = isValidUrl;
