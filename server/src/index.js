@@ -22,12 +22,12 @@ app.get('/health', function (req, res) {
 })
 
 // Routes
-app.use('/api/shorten', shortenRoute)
-app.use('/api/links', linksRoute)
-app.use('/', redirectRoute)
+app.use('/api/shorten', shortenRoute);
+app.use('/api/links', linksRoute);
+app.use('/', redirectRoute);
 
 app.listen(PORT, function () {
   console.log(`Server running on port ${PORT}`)
-})
+});
 
 module.exports = app;
