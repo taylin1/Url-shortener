@@ -1,4 +1,4 @@
-import supabase from '../lib/supabaseClient.js';
+import supabase from '../supabaseClient.js';
 
 export const verifyToken = async (req, res, next) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
