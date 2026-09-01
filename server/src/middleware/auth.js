@@ -1,6 +1,6 @@
-import supabase from '../supabaseClient.js';
+const supabase = require('../supabaseClient.js');
 
-export const verifyToken = async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
 
   if (!token) {
@@ -20,3 +20,5 @@ export const verifyToken = async (req, res, next) => {
     return res.status(401).json({ error: 'Token verification failed' });
   }
 };
+
+module.exports = { verifyToken };

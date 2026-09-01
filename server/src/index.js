@@ -1,10 +1,10 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import shortenRouter from './routes/shorten.js';
-import redirectRouter from './routes/redirect.js';
-import linksRouter from './routes/links.js';
-import { verifyToken } from './middleware/auth.js';
+require('dotenv/config');
+const express = require('express');
+const cors = require('cors');
+const shortenRouter = require('./routes/shorten.js');
+const redirectRouter = require('./routes/redirect.js');
+const linksRouter = require('./routes/links.js');
+const { verifyToken } = require('./middleware/auth.js');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,8 +23,10 @@ app.use('/api', shortenRouter);
 app.use('/api', linksRouter);
 app.use('/', redirectRouter);
 
+
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
-export default app;
+module.exports = app;

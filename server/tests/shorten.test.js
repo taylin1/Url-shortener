@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+const { describe, it, expect } = require('vitest');
 
 describe('POST /api/shorten', () => {
   it('should return 401 without token', async () => {
