@@ -12,16 +12,9 @@ const PORT = process.env.PORT || 3001
 
 // Middleware
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, etc)
-    // and any localhost origin (client dev server can be on any port)
-    if (!origin || origin.startsWith('http://localhost')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-}))
+  origin: process.env.CLIENT_URL
+}));
+
 app.use(express.json())
 
 // Health check
