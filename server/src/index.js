@@ -13,15 +13,15 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use('/api', shortenRouter);
-app.use('/api', linksRouter);
-app.use('/', redirectRouter);
-
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
+
+// Routes
+app.use('/api', shortenRouter);
+app.use('/api', linksRouter);
+app.use('/', redirectRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
