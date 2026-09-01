@@ -8,16 +8,14 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState(null);
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError(null);
 
     const {error} = await supabase.auth.signUp({email,password});
 
     if(error){
-      setError(error.message);
+      console.error(error.message);
     }else{
       navigate('/login');
     }

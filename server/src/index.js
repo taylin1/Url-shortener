@@ -12,7 +12,15 @@ const PORT = process.env.PORT || 3001
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173'
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc)
+    // and any localhost origin (client dev server can be on any port)
+    if (!origin || origin.startsWith('http://localhost')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
 }))
 app.use(express.json())
 
