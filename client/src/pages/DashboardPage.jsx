@@ -63,6 +63,17 @@ function DashboardPage() {
         fetchLinks(session.access_token);
       }
     });
+
+    // Keep session in sync when Supabase refreshes the token in the background
+    // Without this, the access_token here goes stale and requests start
+    // failing with 401 even though the user is still logged in
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(function (_event, session) {
+      setSession(session);
+    });
+
+    return function () {
+      subscription.unsubscribe();
+    };
   }, []);
 
   function handleDelete(linkId) {
