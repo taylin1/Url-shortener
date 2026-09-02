@@ -65,6 +65,36 @@ function DashboardPage() {
     });
   }, []);
 
+
+  function handleDelete(linkId) {
+    setError(null);
+    setSuccess(null);
+
+    async function deleteLink() {
+      try {
+        const token = session.access_token;
+
+        const response = await fetch(`${API_URL}/api/links/${linkId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          setError('Failed to delete link');
+          return;
+        }
+
+        setSuccess('Link deleted successfully');
+        fetchLinks(token);
+      } catch {
+        setError('Could not connect to server. Make sure the server is running.');
+      }
+    }
+
+    deleteLink();
+  }
   // Sends the URL to Express to be shortened
   async function handleShorten() {
     setError(null);
@@ -243,6 +273,12 @@ function DashboardPage() {
                       <span className="text-slate-500 text-xs">
                         {new Date(link.createdAt).toLocaleDateString()}
                       </span>
+                      <button
+                        onClick={() => handleDelete(link.id)}
+                        className="ml-auto text-xs text-slate-400 hover:text-red-400 border border-slate-800 hover:border-red-500/50 px-3 py-1 rounded-lg transition-all uppercase tracking-wide"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 );

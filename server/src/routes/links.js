@@ -74,5 +74,30 @@ router.get('/', verifyToken, async function (req, res) {
   return res.status(200).json(formattedLinks)
 })
 
+// DELETE /api/links/:id
+// Removes a link owned by the authenticated user
+router.delete('/:id', verifyToken, async function (req, res) {
+  const userId = req.user.id
+  const { id } = req.params
+
+  // Scope the delete to this user so nobody can delete another user's link
+  const { data, error } = await supabase
+    .from('links')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId)
+    .select()
+
+  if (error) {
+    return res.status(500).json({ error: 'Failed to delete link' })
+  }
+
+  if (!data || data.length === 0) {
+    return res.status(404).json({ error: 'Link not found' })
+  }
+
+  return res.status(200).json({ success: true })
+})
+
 // Export the router so index.js can register it
 module.exports = router
