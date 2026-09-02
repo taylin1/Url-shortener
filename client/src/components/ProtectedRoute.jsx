@@ -50,9 +50,14 @@ function ProtectedRoute({ children }) {
   // when the component first mounts — not on every re-render
 
   // Still waiting for Supabase to respond with the session
-  // Return null so nothing renders while we wait
-  // This prevents a flicker of the login page before the check completes
-  if (session === undefined) return null;
+  // Show a loading message instead of a blank screen while we wait
+  if (session === undefined) {
+    return (
+      <p className="text-gray-400 text-sm">
+        Loading... (server may take up to 60 seconds to wake up on first load)
+      </p>
+    );
+  }
 
   // Supabase responded and there is no active session
   // User is not logged in — redirect them to login

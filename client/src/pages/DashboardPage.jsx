@@ -231,7 +231,9 @@ function DashboardPage() {
 
           {/* Still loading links */}
           {fetching && (
-            <p className="text-slate-400 text-sm">Loading your links...</p>
+            <p className="text-gray-400 text-sm">
+              Loading... (server may take up to 60 seconds to wake up on first load)
+            </p>
           )}
 
           {/* No links yet */}
