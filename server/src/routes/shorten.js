@@ -60,7 +60,7 @@ router.post('/', verifyToken, async function (req, res) {
     id: data.id,
     originalUrl: data.original_url,
     shortCode: data.short_code,
-    shortUrl: `http://localhost:3001/${data.short_code}`,
+    shortUrl: `${process.env.BASE_URL || 'http://localhost:3001'}/${data.short_code}`,
     createdAt: data.created_at
   })
 })

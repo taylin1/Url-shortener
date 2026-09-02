@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 function DashboardPage() {
   // Holds the current logged in user's session
@@ -12,7 +12,7 @@ function DashboardPage() {
   const [links, setLinks] = useState([]);
 
   // The URL the user types into the input
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState("");
 
   // Error message to show if something goes wrong
   const [error, setError] = useState(null);
@@ -36,20 +36,20 @@ function DashboardPage() {
     try {
       const response = await fetch(`${API_URL}/api/links`, {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError('Failed to fetch links');
+        setError("Failed to fetch links");
         return;
       }
 
       setLinks(data);
     } catch {
-      setError('Could not connect to server. Make sure the server is running.');
+      setError("Could not connect to server. Make sure the server is running.");
     } finally {
       setFetching(false);
     }
@@ -65,7 +65,6 @@ function DashboardPage() {
     });
   }, []);
 
-
   function handleDelete(linkId) {
     setError(null);
     setSuccess(null);
@@ -75,21 +74,23 @@ function DashboardPage() {
         const token = session.access_token;
 
         const response = await fetch(`${API_URL}/api/links/${linkId}`, {
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         if (!response.ok) {
-          setError('Failed to delete link');
+          setError("Failed to delete link");
           return;
         }
 
-        setSuccess('Link deleted successfully');
+        setSuccess("Link deleted successfully");
         fetchLinks(token);
       } catch {
-        setError('Could not connect to server. Make sure the server is running.');
+        setError(
+          "Could not connect to server. Make sure the server is running.",
+        );
       }
     }
 
@@ -105,12 +106,12 @@ function DashboardPage() {
       const token = session.access_token;
 
       const response = await fetch(`${API_URL}/api/shorten`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ url }),
       });
 
       const data = await response.json();
@@ -121,7 +122,7 @@ function DashboardPage() {
       }
 
       // Clear the input
-      setUrl('');
+      setUrl("");
 
       // Show a success message with the new short URL
       setSuccess(`Short link created: ${data.shortUrl}`);
@@ -129,7 +130,7 @@ function DashboardPage() {
       // Refresh the links list so the new link appears immediately
       fetchLinks(token);
     } catch {
-      setError('Could not connect to server. Make sure the server is running.');
+      setError("Could not connect to server. Make sure the server is running.");
     } finally {
       setLoading(false);
     }
@@ -138,17 +139,29 @@ function DashboardPage() {
   // Logs the user out and sends them back to login
   async function handleLogout() {
     await supabase.auth.signOut();
-    navigate('/login');
+    navigate("/login");
   }
 
   return (
     <div className="relative min-h-screen w-full bg-[#030712] text-slate-100 font-sans select-none overflow-hidden">
-
       {/* Background grid */}
-      <svg className="absolute inset-0 w-full h-full opacity-25 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        className="absolute inset-0 w-full h-full opacity-25 pointer-events-none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <defs>
-          <pattern id="dash-grid" width="50" height="50" patternUnits="userSpaceOnUse">
-            <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(6, 182, 212, 0.12)" strokeWidth="1" />
+          <pattern
+            id="dash-grid"
+            width="50"
+            height="50"
+            patternUnits="userSpaceOnUse"
+          >
+            <path
+              d="M 50 0 L 0 0 0 50"
+              fill="none"
+              stroke="rgba(6, 182, 212, 0.12)"
+              strokeWidth="1"
+            />
             <circle cx="50" cy="0" r="1.5" fill="rgba(6, 182, 212, 0.2)" />
           </pattern>
         </defs>
@@ -160,11 +173,12 @@ function DashboardPage() {
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-950/25 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-2xl mx-auto px-4 py-10">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-cyan-400 text-sm font-semibold tracking-widest uppercase">Url Shortener</h1>
+            <h1 className="text-cyan-400 text-sm font-semibold tracking-widest uppercase">
+              Url Shortener
+            </h1>
             <p className="text-slate-400 text-sm mt-1">
               {session?.user?.email}
             </p>
@@ -200,7 +214,7 @@ function DashboardPage() {
               disabled={loading || !url}
               className="relative bg-transparent border border-cyan-400/60 hover:border-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-cyan-300 hover:text-white font-semibold rounded-lg px-5 py-3 text-sm transition-colors duration-300"
             >
-              {loading ? 'Shortening...' : 'Shorten'}
+              {loading ? "Shortening..." : "Shorten"}
             </button>
           </div>
 
@@ -232,7 +246,8 @@ function DashboardPage() {
           {/* Still loading links */}
           {fetching && (
             <p className="text-gray-400 text-sm">
-              Loading... (server may take up to 60 seconds to wake up on first load)
+              Loading... (server may take up to 60 seconds to wake up on first
+              load)
             </p>
           )}
 
@@ -288,7 +303,6 @@ function DashboardPage() {
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

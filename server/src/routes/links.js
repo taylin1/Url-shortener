@@ -59,7 +59,7 @@ router.get('/', verifyToken, async function (req, res) {
       shortCode: link.short_code,
 
       // Build the full short URL so React doesn't have to construct it
-      shortUrl: `http://localhost:3001/${link.short_code}`,
+      shortUrl: `${process.env.BASE_URL || 'http://localhost:3001'}/${link.short_code}`,
 
       // Supabase returns clicks as an array: [{ count: 5 }]
       // We access [0].count to get the actual number
