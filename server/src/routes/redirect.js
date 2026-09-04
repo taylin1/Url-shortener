@@ -10,7 +10,7 @@ router.get('/:code', async function (req, res) {
   // Also select expiration fields to check if link is still valid
   const { data: link, error } = await supabase
     .from('links')
-    .select('id, original_url, expires_at, max_clicks, clicks(count)')
+    .select('id, original_url, expires_at, max_clicks')
     .eq('short_code', code)
     .single()
 
@@ -30,7 +30,12 @@ router.get('/:code', async function (req, res) {
 
   // Check if link has reached max clicks
   if (link.max_clicks) {
-    const currentClicks = link.clicks[0]?.count || 0
+    const { count } = await supabase
+      .from('clicks')
+      .select('*', { count: 'exact', head: true })
+      .eq('link_id', link.id)
+
+    const currentClicks = count || 0
     if (currentClicks >= link.max_clicks) {
       return res.status(410).json({ error: 'This link has expired (click limit reached)' })
     }

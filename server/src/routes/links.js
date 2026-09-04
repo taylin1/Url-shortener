@@ -17,6 +17,7 @@ router.get('/', verifyToken, async function (req, res) {
   // req.user was attached by verifyToken middleware
   // we grab the user's id so we only fetch their links
   const userId = req.user.id
+  console.log('Fetching links for user:', userId)
 
   // Query the links table in Supabase
   // We select specific columns we need — not everything
@@ -28,13 +29,8 @@ router.get('/', verifyToken, async function (req, res) {
       short_code,
       expires_at,
       max_clicks,
-      created_at,
-      clicks (count)
+      created_at
     `)
-    // clicks (count) is a relational query
-    // Supabase looks at the clicks table, finds all rows
-    // where link_id matches this link, and returns the count
-    // This avoids making a separate database call for each link
 
     // Only return links that belong to this user
     .eq('user_id', userId)
@@ -45,7 +41,29 @@ router.get('/', verifyToken, async function (req, res) {
   // If the database query failed, return a 500 error
   // 500 means something went wrong on the server side
   if (error) {
-    return res.status(500).json({ error: 'Failed to fetch links' })
+    console.error('Error fetching links:', error)
+    console.error('Error details:', JSON.stringify(error, null, 2))
+    return res.status(500).json({ error: 'Failed to fetch links', details: error.message })
+  }
+
+  console.log('Successfully fetched links:', links.length)
+
+  // Fetch click counts separately to avoid relational query issues
+  // This works even if there's no foreign key relationship defined
+  const linkIds = links.map(function (l) { return l.id })
+  const clickCounts = {}
+
+  if (linkIds.length > 0) {
+    const { data: clicks, error: clicksError } = await supabase
+      .from('clicks')
+      .select('link_id')
+      .in('link_id', linkIds)
+
+    if (!clicksError && clicks) {
+      clicks.forEach(function (click) {
+        clickCounts[click.link_id] = (clickCounts[click.link_id] || 0) + 1
+      })
+    }
   }
 
   // Reformat the data before sending it to React
@@ -63,9 +81,8 @@ router.get('/', verifyToken, async function (req, res) {
       // Build the full short URL so React doesn't have to construct it
       shortUrl: `http://localhost:3001/${link.short_code}`,
 
-      // Supabase returns clicks as an array: [{ count: 5 }]
-      // We access [0].count to get the actual number
-      clickCount: link.clicks[0].count,
+      // Use pre-fetched click counts
+      clickCount: clickCounts[link.id] || 0,
 
       // Include expiration fields
       expiresAt: link.expires_at,
@@ -164,8 +181,7 @@ router.put('/:id', verifyToken, async function (req, res) {
       short_code,
       expires_at,
       max_clicks,
-      created_at,
-      clicks (count)
+      created_at
     `)
     .single()
 
@@ -177,13 +193,19 @@ router.put('/:id', verifyToken, async function (req, res) {
     return res.status(404).json({ error: 'Link not found' })
   }
 
+  // Fetch click count separately
+  const { count } = await supabase
+    .from('clicks')
+    .select('*', { count: 'exact', head: true })
+    .eq('link_id', id)
+
   // Format and return the updated link
   const formattedLink = {
     id: data.id,
     originalUrl: data.original_url,
     shortCode: data.short_code,
     shortUrl: `http://localhost:3001/${data.short_code}`,
-    clickCount: data.clicks[0].count,
+    clickCount: count || 0,
     expiresAt: data.expires_at,
     maxClicks: data.max_clicks,
     createdAt: data.created_at
