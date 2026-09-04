@@ -28,9 +28,25 @@ function isValidUrl(string) {
   }
 }
 
+// Validates that expiresAt is a future date
+function isValidExpirationDate(dateString) {
+  try {
+    const date = new Date(dateString)
+    const now = new Date()
+    return date > now
+  } catch {
+    return false
+  }
+}
+
+// Validates that maxClicks is a positive integer
+function isValidMaxClicks(clicks) {
+  return Number.isInteger(clicks) && clicks > 0
+}
+
 // POST /api/shorten
 router.post('/', verifyToken, async function (req, res) {
-  const { url } = req.body
+  const { url, expiresAt, maxClicks } = req.body
 
   if (!url) {
     return res.status(400).json({ error: 'URL is required' });
@@ -40,6 +56,16 @@ router.post('/', verifyToken, async function (req, res) {
     return res.status(400).json({ error: 'Invalid URL. Must start with http:// or https://' });
   }
 
+  // Validate expiration date if provided
+  if (expiresAt && !isValidExpirationDate(expiresAt)) {
+    return res.status(400).json({ error: 'Expiration date must be in the future' });
+  }
+
+  // Validate max clicks if provided
+  if (maxClicks && !isValidMaxClicks(maxClicks)) {
+    return res.status(400).json({ error: 'Max clicks must be a positive integer' });
+  }
+
   const shortCode = generateShortCode()
 
   const { data, error } = await supabase
@@ -47,7 +73,9 @@ router.post('/', verifyToken, async function (req, res) {
     .insert({
       user_id: req.user.id,
       original_url: url,
-      short_code: shortCode
+      short_code: shortCode,
+      expires_at: expiresAt || null,
+      max_clicks: maxClicks || null
     })
     .select()
     .single()
@@ -61,6 +89,8 @@ router.post('/', verifyToken, async function (req, res) {
     originalUrl: data.original_url,
     shortCode: data.short_code,
     shortUrl: `http://localhost:3001/${data.short_code}`,
+    expiresAt: data.expires_at,
+    maxClicks: data.max_clicks,
     createdAt: data.created_at
   })
 })

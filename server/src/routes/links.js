@@ -26,6 +26,8 @@ router.get('/', verifyToken, async function (req, res) {
       id,
       original_url,
       short_code,
+      expires_at,
+      max_clicks,
       created_at,
       clicks (count)
     `)
@@ -65,6 +67,10 @@ router.get('/', verifyToken, async function (req, res) {
       // We access [0].count to get the actual number
       clickCount: link.clicks[0].count,
 
+      // Include expiration fields
+      expiresAt: link.expires_at,
+      maxClicks: link.max_clicks,
+
       createdAt: link.created_at
     }
   })
@@ -97,6 +103,93 @@ router.delete('/:id', verifyToken, async function (req, res) {
   }
 
   return res.status(200).json({ success: true })
+})
+
+// PUT /api/links/:id
+// Updates a link owned by the authenticated user
+// Can update originalUrl, expiresAt, and maxClicks
+router.put('/:id', verifyToken, async function (req, res) {
+  const userId = req.user.id
+  const { id } = req.params
+  const { originalUrl, expiresAt, maxClicks } = req.body
+
+  // Import validation functions from shorten route
+  const { isValidUrl } = require('./shorten')
+
+  // Validate URL if provided
+  if (originalUrl && !isValidUrl(originalUrl)) {
+    return res.status(400).json({ error: 'Invalid URL. Must start with http:// or https://' })
+  }
+
+  // Validate expiration date if provided
+  if (expiresAt) {
+    try {
+      const date = new Date(expiresAt)
+      const now = new Date()
+      if (date <= now) {
+        return res.status(400).json({ error: 'Expiration date must be in the future' })
+      }
+    } catch {
+      return res.status(400).json({ error: 'Invalid expiration date format' })
+    }
+  }
+
+  // Validate max clicks if provided
+  if (maxClicks !== undefined && maxClicks !== null) {
+    if (!Number.isInteger(maxClicks) || maxClicks <= 0) {
+      return res.status(400).json({ error: 'Max clicks must be a positive integer' })
+    }
+  }
+
+  // Build update object with only provided fields
+  const updateData = {}
+  if (originalUrl) updateData.original_url = originalUrl
+  if (expiresAt) updateData.expires_at = expiresAt
+  if (maxClicks !== undefined) updateData.max_clicks = maxClicks
+
+  // If no fields to update, return error
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ error: 'No fields to update' })
+  }
+
+  // Scope the update to this user so nobody can edit another user's link
+  const { data, error } = await supabase
+    .from('links')
+    .update(updateData)
+    .eq('id', id)
+    .eq('user_id', userId)
+    .select(`
+      id,
+      original_url,
+      short_code,
+      expires_at,
+      max_clicks,
+      created_at,
+      clicks (count)
+    `)
+    .single()
+
+  if (error) {
+    return res.status(500).json({ error: 'Failed to update link' })
+  }
+
+  if (!data) {
+    return res.status(404).json({ error: 'Link not found' })
+  }
+
+  // Format and return the updated link
+  const formattedLink = {
+    id: data.id,
+    originalUrl: data.original_url,
+    shortCode: data.short_code,
+    shortUrl: `http://localhost:3001/${data.short_code}`,
+    clickCount: data.clicks[0].count,
+    expiresAt: data.expires_at,
+    maxClicks: data.max_clicks,
+    createdAt: data.created_at
+  }
+
+  return res.status(200).json(formattedLink)
 })
 
 // Export the router so index.js can register it
