@@ -254,6 +254,31 @@ function DashboardPage() {
 
   return (
     <div className="relative min-h-screen w-full bg-[#030712] text-slate-100 font-sans select-none overflow-hidden">
+      <style>{`
+        .links-scroll-area::-webkit-scrollbar {
+          width: 8px;
+        }
+        .links-scroll-area::-webkit-scrollbar-track {
+          background: rgba(15, 23, 42, 0.5);
+          border-radius: 8px;
+        }
+        .links-scroll-area::-webkit-scrollbar-thumb {
+          background: rgba(6, 182, 212, 0.5);
+          border-radius: 8px;
+          border: 2px solid rgba(15, 23, 42, 0.6);
+          box-shadow: 0 0 8px rgba(6, 182, 212, 0.4),
+                      0 0 2px rgba(6, 182, 212, 0.6);
+        }
+        .links-scroll-area::-webkit-scrollbar-thumb:hover {
+          background: rgba(6, 182, 212, 0.75);
+          box-shadow: 0 0 12px rgba(6, 182, 212, 0.6),
+                      0 0 4px rgba(6, 182, 212, 0.8);
+        }
+        .links-scroll-area {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(6, 182, 212, 0.5) rgba(15, 23, 42, 0.5);
+        }
+      `}</style>
       {/* Background grid */}
       <svg
         className="absolute inset-0 w-full h-full opacity-25 pointer-events-none"
@@ -384,7 +409,7 @@ function DashboardPage() {
         </div>
 
         {/* Links list */}
-        <div className="relative backdrop-blur-xl bg-slate-950/45 rounded-2xl border border-cyan-500/15 p-6 shadow-[0_0_50px_rgba(6,182,212,0.08),inset_0_0_24px_rgba(6,182,212,0.03)] overflow-hidden">
+        <div className="relative backdrop-blur-xl bg-slate-950/45 rounded-2xl border border-cyan-500/15 p-6 shadow-[0_0_50px_rgba(6,182,212,0.08),inset_0_0_24px_rgba(6,182,212,0.03)] overflow-y-auto max-h-[70vh] links-scroll-area">
           {/* Tech Corner Accents */}
           <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-cyan-400/80 rounded-tl-2xl" />
           <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-cyan-400/30 rounded-tr-2xl" />
