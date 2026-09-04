@@ -128,27 +128,19 @@ router.delete('/:id', verifyToken, async function (req, res) {
 router.put('/:id', verifyToken, async function (req, res) {
   const userId = req.user.id
   const { id } = req.params
-  const { originalUrl, expiresAt, maxClicks } = req.body
+  const { originalUrl, expiresDays, maxClicks } = req.body
 
   // Import validation functions from shorten route
-  const { isValidUrl } = require('./shorten')
+  const { isValidUrl, isValidExpirationDays, daysToExpirationDate } = require('./shorten')
 
   // Validate URL if provided
   if (originalUrl && !isValidUrl(originalUrl)) {
     return res.status(400).json({ error: 'Invalid URL. Must start with http:// or https://' })
   }
 
-  // Validate expiration date if provided
-  if (expiresAt) {
-    try {
-      const date = new Date(expiresAt)
-      const now = new Date()
-      if (date <= now) {
-        return res.status(400).json({ error: 'Expiration date must be in the future' })
-      }
-    } catch {
-      return res.status(400).json({ error: 'Invalid expiration date format' })
-    }
+  // Validate expiration days if provided
+  if (expiresDays && !isValidExpirationDays(expiresDays)) {
+    return res.status(400).json({ error: 'Expiration must be between 1 and 5 days' })
   }
 
   // Validate max clicks if provided
@@ -161,7 +153,7 @@ router.put('/:id', verifyToken, async function (req, res) {
   // Build update object with only provided fields
   const updateData = {}
   if (originalUrl) updateData.original_url = originalUrl
-  if (expiresAt) updateData.expires_at = expiresAt
+  if (expiresDays) updateData.expires_at = daysToExpirationDate(expiresDays)
   if (maxClicks !== undefined) updateData.max_clicks = maxClicks
 
   // If no fields to update, return error

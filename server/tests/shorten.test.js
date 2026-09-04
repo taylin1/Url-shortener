@@ -1,5 +1,5 @@
 require('dotenv').config(); // Loads the .env file into process.env
-const { generateShortCode, isValidUrl } = require('../src/routes/shorten');
+const { generateShortCode, isValidUrl, isValidExpirationDays, daysToExpirationDate } = require('../src/routes/shorten');
 
 describe('generateShortCode', function () {
 
@@ -50,6 +50,54 @@ describe('isValidUrl', function () {
 
   test('returns false for ftp protocol', function () {
     expect(isValidUrl('ftp://google.com')).toBe(false)
+  })
+
+});
+
+describe('isValidExpirationDays', function () {
+
+  test('returns true for 1 day', function () {
+    expect(isValidExpirationDays(1)).toBe(true)
+  })
+
+  test('returns true for 5 days', function () {
+    expect(isValidExpirationDays(5)).toBe(true)
+  })
+
+  test('returns false for 0 days', function () {
+    expect(isValidExpirationDays(0)).toBe(false)
+  })
+
+  test('returns false for 6 days', function () {
+    expect(isValidExpirationDays(6)).toBe(false)
+  })
+
+  test('returns false for negative numbers', function () {
+    expect(isValidExpirationDays(-1)).toBe(false)
+  })
+
+  test('returns false for non-integers', function () {
+    expect(isValidExpirationDays(2.5)).toBe(false)
+  })
+
+});
+
+describe('daysToExpirationDate', function () {
+
+  test('converts 1 day to a future date', function () {
+    const result = new Date(daysToExpirationDate(1))
+    const now = new Date()
+    const oneDayFromNow = new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000)
+    // Should be within 1 second of expected
+    expect(Math.abs(result - oneDayFromNow)).toBeLessThan(1000)
+  })
+
+  test('converts 5 days to a future date', function () {
+    const result = new Date(daysToExpirationDate(5))
+    const now = new Date()
+    const fiveDaysFromNow = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000)
+    // Should be within 1 second of expected
+    expect(Math.abs(result - fiveDaysFromNow)).toBeLessThan(1000)
   })
 
 });

@@ -27,13 +27,13 @@ function DashboardPage() {
   const [fetching, setFetching] = useState(true);
 
   // Expiration fields for shorten form
-  const [expiresAt, setExpiresAt] = useState('');
+  const [expiresDays, setExpiresDays] = useState('');
   const [maxClicks, setMaxClicks] = useState('');
 
   // Edit mode state
   const [isEditing, setIsEditing] = useState(null); // null or link id
   const [editUrl, setEditUrl] = useState('');
-  const [editExpiresAt, setEditExpiresAt] = useState('');
+  const [editExpiresDays, setEditExpiresDays] = useState('');
   const [editMaxClicks, setEditMaxClicks] = useState('');
   const [editLoading, setEditLoading] = useState(false);
 
@@ -110,7 +110,15 @@ function DashboardPage() {
   function handleEdit(link) {
     setIsEditing(link.id);
     setEditUrl(link.originalUrl);
-    setEditExpiresAt(link.expiresAt || '');
+    // Calculate remaining days from expiresAt date
+    if (link.expiresAt) {
+      const now = new Date();
+      const expires = new Date(link.expiresAt);
+      const daysLeft = Math.ceil((expires - now) / (24 * 60 * 60 * 1000));
+      setEditExpiresDays(Math.max(1, Math.min(5, daysLeft)));
+    } else {
+      setEditExpiresDays('');
+    }
     setEditMaxClicks(link.maxClicks || '');
     setError(null);
     setSuccess(null);
@@ -119,7 +127,7 @@ function DashboardPage() {
   function handleCancelEdit() {
     setIsEditing(null);
     setEditUrl('');
-    setEditExpiresAt('');
+    setEditExpiresDays('');
     setEditMaxClicks('');
     setError(null);
     setSuccess(null);
@@ -136,7 +144,7 @@ function DashboardPage() {
 
         const updateData = {};
         if (editUrl) updateData.originalUrl = editUrl;
-        if (editExpiresAt) updateData.expiresAt = editExpiresAt;
+        if (editExpiresDays) updateData.expiresDays = parseInt(editExpiresDays, 10);
         if (editMaxClicks) updateData.maxClicks = parseInt(editMaxClicks, 10);
 
         const response = await fetch(`${API_URL}/api/links/${linkId}`, {
@@ -159,7 +167,7 @@ function DashboardPage() {
         setSuccess('Link updated successfully');
         setIsEditing(null);
         setEditUrl('');
-        setEditExpiresAt('');
+        setEditExpiresDays('');
         setEditMaxClicks('');
         fetchLinks(token);
       } catch {
@@ -180,7 +188,7 @@ function DashboardPage() {
       const token = session.access_token;
 
       const body = { url };
-      if (expiresAt) body.expiresAt = expiresAt;
+      if (expiresDays) body.expiresDays = parseInt(expiresDays, 10);
       if (maxClicks) body.maxClicks = parseInt(maxClicks, 10);
 
       const response = await fetch(`${API_URL}/api/shorten`, {
@@ -201,7 +209,7 @@ function DashboardPage() {
 
       // Clear the inputs
       setUrl('');
-      setExpiresAt('');
+      setExpiresDays('');
       setMaxClicks('');
 
       // Show a success message with the new short URL
@@ -288,11 +296,14 @@ function DashboardPage() {
           {/* Expiration options */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
-              <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Expires at (optional)</label>
+              <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Expires in (days, max 5)</label>
               <input
-                type="datetime-local"
-                value={expiresAt}
-                onChange={(e) => setExpiresAt(e.target.value)}
+                type="number"
+                min="1"
+                max="5"
+                value={expiresDays}
+                onChange={(e) => setExpiresDays(e.target.value)}
+                placeholder="Never"
                 className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 placeholder-slate-600 rounded-lg px-3 py-2 text-sm transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
               />
             </div>
@@ -382,15 +393,18 @@ function DashboardPage() {
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Expires at</label>
-                            <input
-                              type="datetime-local"
-                              value={editExpiresAt ? editExpiresAt.slice(0, 16) : ''}
-                              onChange={(e) => setEditExpiresAt(e.target.value)}
-                              className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 rounded-lg px-3 py-2 text-sm mt-1 transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
-                            />
-                          </div>
+                        <div>
+                          <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Expires in (days, max 5)</label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="5"
+                            value={editExpiresDays}
+                            onChange={(e) => setEditExpiresDays(e.target.value)}
+                            placeholder="Never"
+                            className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 rounded-lg px-3 py-2 text-sm mt-1 transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                          />
+                        </div>
                           <div>
                             <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Max clicks</label>
                             <input
