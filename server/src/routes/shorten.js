@@ -28,9 +28,32 @@ function isValidUrl(string) {
   }
 }
 
+// Validates that expiresDays is a number between 1 and 5
+function isValidExpirationDays(days) {
+  return Number.isInteger(days) && days >= 1 && days <= 5
+}
+
+// Converts days to a future date string
+function daysToExpirationDate(days) {
+  const now = new Date()
+  const expirationDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000)
+  return expirationDate.toISOString()
+}
+
+// Validates that maxClicks is a positive integer
+function isValidMaxClicks(clicks) {
+  return Number.isInteger(clicks) && clicks > 0
+}
+
+// Validates that name is <= 50 chars
+function isValidName(name) {
+  if (!name) return true; // optional
+  return typeof name === 'string' && name.length <= 50;
+}
+
 // POST /api/shorten
 router.post('/', verifyToken, async function (req, res) {
-  const { url } = req.body
+  const { url, expiresDays, maxClicks, name } = req.body
 
   if (!url) {
     return res.status(400).json({ error: 'URL is required' });
@@ -40,6 +63,21 @@ router.post('/', verifyToken, async function (req, res) {
     return res.status(400).json({ error: 'Invalid URL. Must start with http:// or https://' });
   }
 
+  // Validate expiration days if provided
+  if (expiresDays && !isValidExpirationDays(expiresDays)) {
+    return res.status(400).json({ error: 'Expiration must be between 1 and 5 days' });
+  }
+
+  // Validate max clicks if provided
+  if (maxClicks && !isValidMaxClicks(maxClicks)) {
+    return res.status(400).json({ error: 'Max clicks must be a positive integer' });
+  }
+
+  // Validate name if provided
+  if (name && !isValidName(name)) {
+    return res.status(400).json({ error: 'Name must be 50 characters or fewer' });
+  }
+
   const shortCode = generateShortCode()
 
   const { data, error } = await supabase
@@ -47,7 +85,10 @@ router.post('/', verifyToken, async function (req, res) {
     .insert({
       user_id: req.user.id,
       original_url: url,
-      short_code: shortCode
+      short_code: shortCode,
+      name: name || null,
+      expires_at: expiresDays ? daysToExpirationDate(expiresDays) : null,
+      max_clicks: maxClicks || null
     })
     .select()
     .single()
@@ -61,6 +102,9 @@ router.post('/', verifyToken, async function (req, res) {
     originalUrl: data.original_url,
     shortCode: data.short_code,
     shortUrl: `${process.env.BASE_URL || 'http://localhost:3001'}/${data.short_code}`,
+    name: data.name || null,
+    expiresAt: data.expires_at,
+    maxClicks: data.max_clicks,
     createdAt: data.created_at
   })
 })
@@ -68,3 +112,5 @@ router.post('/', verifyToken, async function (req, res) {
 module.exports = router;
 module.exports.generateShortCode = generateShortCode;
 module.exports.isValidUrl = isValidUrl;
+module.exports.isValidExpirationDays = isValidExpirationDays;
+module.exports.daysToExpirationDate = daysToExpirationDate;

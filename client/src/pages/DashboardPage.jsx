@@ -14,6 +14,9 @@ function DashboardPage() {
   // The URL the user types into the input
   const [url, setUrl] = useState("");
 
+  // The optional name/label for the link
+  const [name, setName] = useState('');
+
   // Error message to show if something goes wrong
   const [error, setError] = useState(null);
 
@@ -25,6 +28,18 @@ function DashboardPage() {
 
   // Loading state for the links list
   const [fetching, setFetching] = useState(true);
+
+  // Expiration fields for shorten form
+  const [expiresDays, setExpiresDays] = useState('');
+  const [maxClicks, setMaxClicks] = useState('');
+
+  // Edit mode state
+  const [isEditing, setIsEditing] = useState(null); // null or link id
+  const [editUrl, setEditUrl] = useState('');
+  const [editName, setEditName] = useState('');
+  const [editExpiresDays, setEditExpiresDays] = useState('');
+  const [editMaxClicks, setEditMaxClicks] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -107,6 +122,82 @@ function DashboardPage() {
 
     deleteLink();
   }
+
+  function handleEdit(link) {
+    setIsEditing(link.id);
+    setEditUrl(link.originalUrl);
+    setEditName(link.name || '');
+    // Calculate remaining days from expiresAt date
+    if (link.expiresAt) {
+      const now = new Date();
+      const expires = new Date(link.expiresAt);
+      const daysLeft = Math.ceil((expires - now) / (24 * 60 * 60 * 1000));
+      setEditExpiresDays(Math.max(1, Math.min(5, daysLeft)));
+    } else {
+      setEditExpiresDays('');
+    }
+    setEditMaxClicks(link.maxClicks || '');
+    setError(null);
+    setSuccess(null);
+  }
+
+  function handleCancelEdit() {
+    setIsEditing(null);
+    setEditUrl('');
+    setEditName('');
+    setEditExpiresDays('');
+    setEditMaxClicks('');
+    setError(null);
+    setSuccess(null);
+  }
+
+  function handleSaveEdit(linkId) {
+    setError(null);
+    setSuccess(null);
+    setEditLoading(true);
+
+    async function editLink() {
+      try {
+        const token = session.access_token;
+
+        const updateData = {};
+        if (editUrl) updateData.originalUrl = editUrl;
+        if (editName !== '') updateData.name = editName;
+        if (editExpiresDays) updateData.expiresDays = parseInt(editExpiresDays, 10);
+        if (editMaxClicks) updateData.maxClicks = parseInt(editMaxClicks, 10);
+
+        const response = await fetch(`${API_URL}/api/links/${linkId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(updateData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(data.error || 'Failed to update link');
+          setEditLoading(false);
+          return;
+        }
+
+        setSuccess('Link updated successfully');
+        setIsEditing(null);
+        setEditUrl('');
+        setEditName('');
+        setEditExpiresDays('');
+        setEditMaxClicks('');
+        fetchLinks(token);
+      } catch {
+        setError('Could not connect to server. Make sure the server is running.');
+        setEditLoading(false);
+      }
+    }
+
+    editLink();
+  }
   // Sends the URL to Express to be shortened
   async function handleShorten() {
     setError(null);
@@ -116,13 +207,18 @@ function DashboardPage() {
     try {
       const token = session.access_token;
 
+      const body = { url };
+      if (name !== '') body.name = name;
+      if (expiresDays) body.expiresDays = parseInt(expiresDays, 10);
+      if (maxClicks) body.maxClicks = parseInt(maxClicks, 10);
+
       const response = await fetch(`${API_URL}/api/shorten`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify(body)
       });
 
       const data = await response.json();
@@ -132,8 +228,11 @@ function DashboardPage() {
         return;
       }
 
-      // Clear the input
-      setUrl("");
+// Clear the inputs
+      setUrl('');
+      setName('');
+      setExpiresDays('');
+      setMaxClicks('')
 
       // Show a success message with the new short URL
       setSuccess(`Short link created: ${data.shortUrl}`);
@@ -212,7 +311,7 @@ function DashboardPage() {
 
           <h2 className="text-white font-semibold mb-4">Shorten a URL</h2>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 mb-4">
             <input
               type="text"
               placeholder="https://example.com/very-long-url"
@@ -227,6 +326,46 @@ function DashboardPage() {
             >
               {loading ? "Shortening..." : "Shorten"}
             </button>
+          </div>
+
+          {/* Link name (optional) */}
+          <div className="mb-4">
+            <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Link name (optional)</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={50}
+              placeholder="e.g. My Google Link"
+              className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 placeholder-slate-600 rounded-lg px-3 py-2 text-sm transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+            />
+          </div>
+
+          {/* Expiration options */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Expires in (days, max 5)</label>
+              <input
+                type="number"
+                min="1"
+                max="5"
+                value={expiresDays}
+                onChange={(e) => setExpiresDays(e.target.value)}
+                placeholder="Never"
+                className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 placeholder-slate-600 rounded-lg px-3 py-2 text-sm transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Max clicks (optional)</label>
+              <input
+                type="number"
+                min="1"
+                value={maxClicks}
+                onChange={(e) => setMaxClicks(e.target.value)}
+                placeholder="Unlimited"
+                className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 placeholder-slate-600 rounded-lg px-3 py-2 text-sm transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+              />
+            </div>
           </div>
 
           {/* Error message */}
@@ -273,41 +412,152 @@ function DashboardPage() {
           {!fetching && links.length > 0 && (
             <div className="flex flex-col gap-4">
               {links.map(function (link) {
+                const isExpiredByDate = link.expiresAt && new Date(link.expiresAt) < new Date();
+                const isExpiredByClicks = link.maxClicks && link.clickCount >= link.maxClicks;
+                const isExpired = isExpiredByDate || isExpiredByClicks;
+                const editing = isEditing === link.id;
+
                 return (
                   <div
                     key={link.id}
-                    className="bg-slate-950/60 border border-slate-800 rounded-xl p-4"
+                    className={`bg-slate-950/60 border rounded-xl p-4 ${isExpired ? 'border-red-500/30 opacity-60' : 'border-slate-800'}`}
                   >
-                    {/* Original URL */}
-                    <p className="text-slate-500 text-xs truncate mb-1">
-                      {link.originalUrl}
-                    </p>
-
-                    {/* Short URL */}
-                    <a
-                      href={link.shortUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-cyan-400 hover:text-cyan-300 text-sm font-medium"
-                    >
-                      {link.shortUrl}
-                    </a>
-
-                    {/* Click count and date */}
-                    <div className="flex items-center gap-4 mt-3">
-                      <span className="text-emerald-400 text-xs font-medium">
-                        {link.clickCount} clicks
+                    {/* Expired badge */}
+                    {isExpired && (
+                      <span className="inline-block bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-medium px-2 py-0.5 rounded-md mb-2">
+                        Expired
                       </span>
-                      <span className="text-slate-500 text-xs">
-                        {new Date(link.createdAt).toLocaleDateString()}
-                      </span>
-                      <button
-                        onClick={() => handleDelete(link.id)}
-                        className="ml-auto text-xs text-slate-400 hover:text-red-400 border border-slate-800 hover:border-red-500/50 px-3 py-1 rounded-lg transition-all uppercase tracking-wide"
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    )}
+
+                    {editing ? (
+                      /* Edit mode */
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Link name (optional)</label>
+                          <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            maxLength={50}
+                            placeholder="e.g. My Google Link"
+                            className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 placeholder-slate-600 rounded-lg px-3 py-2 text-sm mt-1 transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Original URL</label>
+                          <input
+                            type="text"
+                            value={editUrl}
+                            onChange={(e) => setEditUrl(e.target.value)}
+                            className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 placeholder-slate-600 rounded-lg px-3 py-2 text-sm mt-1 transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Expires in (days, max 5)</label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="5"
+                            value={editExpiresDays}
+                            onChange={(e) => setEditExpiresDays(e.target.value)}
+                            placeholder="Never"
+                            className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 rounded-lg px-3 py-2 text-sm mt-1 transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                          />
+                        </div>
+                          <div>
+                            <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Max clicks</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={editMaxClicks}
+                              onChange={(e) => setEditMaxClicks(e.target.value)}
+                              placeholder="Unlimited"
+                              className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 placeholder-slate-600 rounded-lg px-3 py-2 text-sm mt-1 transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-2 justify-end">
+                          <button
+                            onClick={handleCancelEdit}
+                            className="text-xs text-slate-400 hover:text-slate-200 border border-slate-800 hover:border-slate-600 px-3 py-1 rounded-lg transition-all uppercase tracking-wide"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleSaveEdit(link.id)}
+                            disabled={editLoading || !editUrl}
+                            className="text-xs text-cyan-300 hover:text-white border border-cyan-400/60 hover:border-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1 rounded-lg transition-all uppercase tracking-wide"
+                          >
+                            {editLoading ? 'Saving...' : 'Save'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* View mode */
+                      <>
+                        {/* Link name or fallback label */}
+                        {link.name ? (
+                          <span className="text-cyan-300 text-sm font-medium truncate block">
+                            {link.name}
+                          </span>
+                        ) : (
+                          <span className="text-slate-500 text-xs truncate block">
+                            {link.shortUrl}
+                          </span>
+                        )}
+
+                        {/* Short URL */}
+                        <a
+                          href={link.shortUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={`text-sm font-medium ${isExpired ? 'text-slate-500 pointer-events-none' : 'text-cyan-400 hover:text-cyan-300'}`}
+                        >
+                          {link.shortUrl}
+                        </a>
+
+                        {/* Expiration info */}
+                        {(link.expiresAt || link.maxClicks) && (
+                          <div className="flex items-center gap-3 mt-2">
+                            {link.expiresAt && (
+                              <span className="text-amber-400/80 text-xs">
+                                ⏳ Expires: {new Date(link.expiresAt).toLocaleString()}
+                              </span>
+                            )}
+                            {link.maxClicks && (
+                              <span className="text-amber-400/80 text-xs">
+                                🔢 {link.clickCount}/{link.maxClicks} clicks
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Click count, date, and action buttons */}
+                        <div className="flex items-center gap-4 mt-3">
+                          <span className="text-emerald-400 text-xs font-medium">
+                            {link.clickCount} clicks
+                          </span>
+                          <span className="text-slate-500 text-xs">
+                            {new Date(link.createdAt).toLocaleDateString()}
+                          </span>
+                          <div className="ml-auto flex gap-2">
+                            <button
+                              onClick={() => handleEdit(link)}
+                              className="text-xs text-slate-400 hover:text-cyan-400 border border-slate-800 hover:border-cyan-500/50 px-3 py-1 rounded-lg transition-all uppercase tracking-wide"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(link.id)}
+                              className="text-xs text-slate-400 hover:text-red-400 border border-slate-800 hover:border-red-500/50 px-3 py-1 rounded-lg transition-all uppercase tracking-wide"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 );
               })}
