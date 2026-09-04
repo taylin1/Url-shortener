@@ -45,9 +45,15 @@ function isValidMaxClicks(clicks) {
   return Number.isInteger(clicks) && clicks > 0
 }
 
+// Validates that name is <= 50 chars
+function isValidName(name) {
+  if (!name) return true; // optional
+  return typeof name === 'string' && name.length <= 50;
+}
+
 // POST /api/shorten
 router.post('/', verifyToken, async function (req, res) {
-  const { url, expiresDays, maxClicks } = req.body
+  const { url, expiresDays, maxClicks, name } = req.body
 
   if (!url) {
     return res.status(400).json({ error: 'URL is required' });
@@ -67,6 +73,11 @@ router.post('/', verifyToken, async function (req, res) {
     return res.status(400).json({ error: 'Max clicks must be a positive integer' });
   }
 
+  // Validate name if provided
+  if (name && !isValidName(name)) {
+    return res.status(400).json({ error: 'Name must be 50 characters or fewer' });
+  }
+
   const shortCode = generateShortCode()
 
   const { data, error } = await supabase
@@ -75,6 +86,7 @@ router.post('/', verifyToken, async function (req, res) {
       user_id: req.user.id,
       original_url: url,
       short_code: shortCode,
+      name: name || null,
       expires_at: expiresDays ? daysToExpirationDate(expiresDays) : null,
       max_clicks: maxClicks || null
     })
@@ -90,6 +102,7 @@ router.post('/', verifyToken, async function (req, res) {
     originalUrl: data.original_url,
     shortCode: data.short_code,
     shortUrl: `http://localhost:3001/${data.short_code}`,
+    name: data.name || null,
     expiresAt: data.expires_at,
     maxClicks: data.max_clicks,
     createdAt: data.created_at

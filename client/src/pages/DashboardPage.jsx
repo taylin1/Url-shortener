@@ -14,6 +14,9 @@ function DashboardPage() {
   // The URL the user types into the input
   const [url, setUrl] = useState('');
 
+  // The optional name/label for the link
+  const [name, setName] = useState('');
+
   // Error message to show if something goes wrong
   const [error, setError] = useState(null);
 
@@ -33,6 +36,7 @@ function DashboardPage() {
   // Edit mode state
   const [isEditing, setIsEditing] = useState(null); // null or link id
   const [editUrl, setEditUrl] = useState('');
+  const [editName, setEditName] = useState('');
   const [editExpiresDays, setEditExpiresDays] = useState('');
   const [editMaxClicks, setEditMaxClicks] = useState('');
   const [editLoading, setEditLoading] = useState(false);
@@ -110,6 +114,7 @@ function DashboardPage() {
   function handleEdit(link) {
     setIsEditing(link.id);
     setEditUrl(link.originalUrl);
+    setEditName(link.name || '');
     // Calculate remaining days from expiresAt date
     if (link.expiresAt) {
       const now = new Date();
@@ -127,6 +132,7 @@ function DashboardPage() {
   function handleCancelEdit() {
     setIsEditing(null);
     setEditUrl('');
+    setEditName('');
     setEditExpiresDays('');
     setEditMaxClicks('');
     setError(null);
@@ -144,6 +150,7 @@ function DashboardPage() {
 
         const updateData = {};
         if (editUrl) updateData.originalUrl = editUrl;
+        if (editName !== '') updateData.name = editName;
         if (editExpiresDays) updateData.expiresDays = parseInt(editExpiresDays, 10);
         if (editMaxClicks) updateData.maxClicks = parseInt(editMaxClicks, 10);
 
@@ -167,6 +174,7 @@ function DashboardPage() {
         setSuccess('Link updated successfully');
         setIsEditing(null);
         setEditUrl('');
+        setEditName('');
         setEditExpiresDays('');
         setEditMaxClicks('');
         fetchLinks(token);
@@ -188,6 +196,7 @@ function DashboardPage() {
       const token = session.access_token;
 
       const body = { url };
+      if (name !== '') body.name = name;
       if (expiresDays) body.expiresDays = parseInt(expiresDays, 10);
       if (maxClicks) body.maxClicks = parseInt(maxClicks, 10);
 
@@ -209,6 +218,7 @@ function DashboardPage() {
 
       // Clear the inputs
       setUrl('');
+      setName('');
       setExpiresDays('');
       setMaxClicks('');
 
@@ -291,6 +301,19 @@ function DashboardPage() {
             >
               {loading ? 'Shortening...' : 'Shorten'}
             </button>
+          </div>
+
+          {/* Link name (optional) */}
+          <div className="mb-4">
+            <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Link name (optional)</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={50}
+              placeholder="e.g. My Google Link"
+              className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 placeholder-slate-600 rounded-lg px-3 py-2 text-sm transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+            />
           </div>
 
           {/* Expiration options */}
@@ -384,6 +407,17 @@ function DashboardPage() {
                       /* Edit mode */
                       <div className="space-y-3">
                         <div>
+                          <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Link name (optional)</label>
+                          <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            maxLength={50}
+                            placeholder="e.g. My Google Link"
+                            className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 placeholder-slate-600 rounded-lg px-3 py-2 text-sm mt-1 transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                          />
+                        </div>
+                        <div>
                           <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Original URL</label>
                           <input
                             type="text"
@@ -436,10 +470,16 @@ function DashboardPage() {
                     ) : (
                       /* View mode */
                       <>
-                        {/* Original URL */}
-                        <p className={`text-slate-500 text-xs truncate mb-1 ${isExpired ? 'line-through' : ''}`}>
-                          {link.originalUrl}
-                        </p>
+                        {/* Link name or fallback label */}
+                        {link.name ? (
+                          <span className="text-cyan-300 text-sm font-medium truncate block">
+                            {link.name}
+                          </span>
+                        ) : (
+                          <span className="text-slate-500 text-xs truncate block">
+                            {link.shortUrl}
+                          </span>
+                        )}
 
                         {/* Short URL */}
                         <a

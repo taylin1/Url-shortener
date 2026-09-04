@@ -27,6 +27,7 @@ router.get('/', verifyToken, async function (req, res) {
       id,
       original_url,
       short_code,
+      name,
       expires_at,
       max_clicks,
       created_at
@@ -77,6 +78,7 @@ router.get('/', verifyToken, async function (req, res) {
       // Rename snake_case to camelCase
       originalUrl: link.original_url,
       shortCode: link.short_code,
+      name: link.name || null,
 
       // Build the full short URL so React doesn't have to construct it
       shortUrl: `http://localhost:3001/${link.short_code}`,
@@ -124,14 +126,14 @@ router.delete('/:id', verifyToken, async function (req, res) {
 
 // PUT /api/links/:id
 // Updates a link owned by the authenticated user
-// Can update originalUrl, expiresAt, and maxClicks
+// Can update originalUrl, name, expiresAt, and maxClicks
 router.put('/:id', verifyToken, async function (req, res) {
   const userId = req.user.id
   const { id } = req.params
-  const { originalUrl, expiresDays, maxClicks } = req.body
+  const { originalUrl, name, expiresDays, maxClicks } = req.body
 
   // Import validation functions from shorten route
-  const { isValidUrl, isValidExpirationDays, daysToExpirationDate } = require('./shorten')
+  const { isValidUrl, isValidExpirationDays, daysToExpirationDate, isValidName } = require('./shorten')
 
   // Validate URL if provided
   if (originalUrl && !isValidUrl(originalUrl)) {
@@ -150,9 +152,15 @@ router.put('/:id', verifyToken, async function (req, res) {
     }
   }
 
+  // Validate name if provided
+  if (name && !isValidName(name)) {
+    return res.status(400).json({ error: 'Name must be 50 characters or fewer' })
+  }
+
   // Build update object with only provided fields
   const updateData = {}
   if (originalUrl) updateData.original_url = originalUrl
+  if (name !== undefined && name !== null) updateData.name = name || null
   if (expiresDays) updateData.expires_at = daysToExpirationDate(expiresDays)
   if (maxClicks !== undefined) updateData.max_clicks = maxClicks
 
@@ -197,6 +205,7 @@ router.put('/:id', verifyToken, async function (req, res) {
     originalUrl: data.original_url,
     shortCode: data.short_code,
     shortUrl: `http://localhost:3001/${data.short_code}`,
+    name: data.name || null,
     clickCount: count || 0,
     expiresAt: data.expires_at,
     maxClicks: data.max_clicks,
