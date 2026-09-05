@@ -408,15 +408,15 @@ function DashboardPage() {
           )}
         </div>
 
-        {/* Links list */}
-        <div className="relative backdrop-blur-xl bg-slate-950/45 rounded-2xl border border-cyan-500/15 p-4 sm:p-6 shadow-[0_0_50px_rgba(6,182,212,0.08),inset_0_0_24px_rgba(6,182,212,0.03)] overflow-y-auto max-h-[70vh] links-scroll-area">
-          {/* Tech Corner Accents - inset on mobile, full-bleed on larger screens */}
+        {/* Links list card */}
+        <div className="relative backdrop-blur-xl bg-slate-950/45 rounded-2xl border border-cyan-500/15 shadow-[0_0_50px_rgba(6,182,212,0.08),inset_0_0_24px_rgba(6,182,212,0.03)] overflow-hidden">
+          {/* Tech Corner Accents - top corners */}
           <div className="absolute top-2 left-2 sm:top-0 sm:left-0 w-3 h-3 sm:w-4 sm:h-4 border-t-2 border-l-2 border-cyan-400/80 rounded-tl-2xl" />
           <div className="absolute top-2 right-2 sm:top-0 sm:right-0 w-3 h-3 sm:w-4 sm:h-4 border-t-2 border-r-2 border-cyan-400/30 rounded-tr-2xl" />
-          <div className="absolute bottom-2 left-2 sm:bottom-0 sm:left-0 w-3 h-3 sm:w-4 sm:h-4 border-b-2 border-l-2 border-cyan-400/30 rounded-bl-2xl" />
-          <div className="absolute bottom-2 right-2 sm:bottom-0 sm:right-0 w-3 h-3 sm:w-4 sm:h-4 border-b-2 border-r-2 border-cyan-400/80 rounded-br-2xl" />
 
-          <h2 className="text-white font-semibold mb-4">Your Links</h2>
+          {/* Scrollable inner area */}
+          <div className="p-4 sm:p-6 overflow-y-auto max-h-[70vh] links-scroll-area">
+            <h2 className="text-white font-semibold mb-4">Your Links</h2>
 
           {/* Still loading links */}
           {fetching && (
@@ -442,16 +442,26 @@ function DashboardPage() {
                 const isExpired = isExpiredByDate || isExpiredByClicks;
                 const editing = isEditing === link.id;
 
+                const isLast = links.length > 0 && link.id === links[links.length - 1].id;
+
                 return (
                   <div
                     key={link.id}
-                    className={`bg-slate-950/60 border rounded-xl p-4 ${isExpired ? 'border-red-500/30 opacity-60' : 'border-slate-800'}`}
+                    className={`relative bg-slate-950/60 border rounded-xl p-4 ${isExpired ? 'border-red-500/30 opacity-60' : 'border-slate-800'}`}
                   >
                     {/* Expired badge */}
                     {isExpired && (
                       <span className="inline-block bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-medium px-2 py-0.5 rounded-md mb-2">
                         Expired
                       </span>
+                    )}
+
+                    {/* Bottom corner accents on last card only */}
+                    {isLast && (
+                      <>
+                        <div className="absolute bottom-1 left-1 w-2 h-2 border-b-2 border-l-2 border-cyan-400/30 rounded-bl-2xl" />
+                        <div className="absolute bottom-1 right-1 w-2 h-2 border-b-2 border-r-2 border-cyan-400/80 rounded-br-2xl" />
+                      </>
                     )}
 
                     {editing ? (
@@ -477,7 +487,7 @@ function DashboardPage() {
                             className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 placeholder-slate-600 rounded-lg px-3 py-2 text-sm mt-1 transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Expires in (days, max 5)</label>
                           <input
@@ -590,6 +600,7 @@ function DashboardPage() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }
