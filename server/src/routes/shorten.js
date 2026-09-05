@@ -113,4 +113,6 @@ module.exports = router;
 module.exports.generateShortCode = generateShortCode;
 module.exports.isValidUrl = isValidUrl;
 module.exports.isValidExpirationDays = isValidExpirationDays;
+module.exports.isValidMaxClicks = isValidMaxClicks;
+module.exports.isValidName = isValidName;
 module.exports.daysToExpirationDate = daysToExpirationDate;
