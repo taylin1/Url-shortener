@@ -307,9 +307,9 @@ function DashboardPage() {
       <div className="absolute top-1/3 left-1/3 w-[600px] h-[600px] bg-cyan-950/20 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-950/25 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="relative z-10 w-full max-w-2xl mx-auto px-4 py-10">
+      <div className="relative z-10 w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div>
             <h1 className="text-cyan-400 text-sm font-semibold tracking-widest uppercase">
               Url Shortener
@@ -320,23 +320,23 @@ function DashboardPage() {
           </div>
           <button
             onClick={handleLogout}
-            className="text-xs text-slate-400 hover:text-cyan-400 border border-slate-800 hover:border-cyan-500/50 px-3 py-1.5 rounded-lg transition-all uppercase tracking-wide"
+            className="w-full sm:w-auto text-xs text-slate-400 hover:text-cyan-400 border border-slate-800 hover:border-cyan-500/50 px-3 py-1.5 rounded-lg transition-all uppercase tracking-wide"
           >
             Log out
           </button>
         </div>
 
         {/* Shorten form */}
-        <div className="relative backdrop-blur-xl bg-slate-950/45 rounded-2xl border border-cyan-500/15 p-6 mb-6 shadow-[0_0_50px_rgba(6,182,212,0.08),inset_0_0_24px_rgba(6,182,212,0.03)] overflow-hidden">
-          {/* Tech Corner Accents */}
-          <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-cyan-400/80 rounded-tl-2xl" />
-          <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-cyan-400/30 rounded-tr-2xl" />
-          <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-cyan-400/30 rounded-bl-2xl" />
-          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-cyan-400/80 rounded-br-2xl" />
+        <div className="relative backdrop-blur-xl bg-slate-950/45 rounded-2xl border border-cyan-500/15 p-4 sm:p-6 mb-4 sm:mb-6 shadow-[0_0_50px_rgba(6,182,212,0.08),inset_0_0_24px_rgba(6,182,212,0.03)] overflow-hidden">
+          {/* Tech Corner Accents - inset on mobile, full-bleed on larger screens */}
+          <div className="absolute top-2 left-2 sm:top-0 sm:left-0 w-3 h-3 sm:w-4 sm:h-4 border-t-2 border-l-2 border-cyan-400/80 rounded-tl-2xl" />
+          <div className="absolute top-2 right-2 sm:top-0 sm:right-0 w-3 h-3 sm:w-4 sm:h-4 border-t-2 border-r-2 border-cyan-400/30 rounded-tr-2xl" />
+          <div className="absolute bottom-2 left-2 sm:bottom-0 sm:left-0 w-3 h-3 sm:w-4 sm:h-4 border-b-2 border-l-2 border-cyan-400/30 rounded-bl-2xl" />
+          <div className="absolute bottom-2 right-2 sm:bottom-0 sm:right-0 w-3 h-3 sm:w-4 sm:h-4 border-b-2 border-r-2 border-cyan-400/80 rounded-br-2xl" />
 
           <h2 className="text-white font-semibold mb-4">Shorten a URL</h2>
 
-          <div className="flex gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <input
               type="text"
               placeholder="https://example.com/very-long-url"
@@ -347,7 +347,7 @@ function DashboardPage() {
             <button
               onClick={handleShorten}
               disabled={loading || !url}
-              className="relative bg-transparent border border-cyan-400/60 hover:border-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-cyan-300 hover:text-white font-semibold rounded-lg px-5 py-3 text-sm transition-colors duration-300"
+              className="relative bg-transparent border border-cyan-400/60 hover:border-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-cyan-300 hover:text-white font-semibold rounded-lg px-5 py-3 text-sm transition-colors duration-300 whitespace-nowrap"
             >
               {loading ? "Shortening..." : "Shorten"}
             </button>
@@ -366,8 +366,8 @@ function DashboardPage() {
             />
           </div>
 
-          {/* Expiration options */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
+          {/* Expiration options - stack on mobile, side by side on larger screens */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div>
               <label className="text-xs text-cyan-400/70 uppercase tracking-wide">Expires in (days, max 5)</label>
               <input
@@ -409,12 +409,12 @@ function DashboardPage() {
         </div>
 
         {/* Links list */}
-        <div className="relative backdrop-blur-xl bg-slate-950/45 rounded-2xl border border-cyan-500/15 p-6 shadow-[0_0_50px_rgba(6,182,212,0.08),inset_0_0_24px_rgba(6,182,212,0.03)] overflow-y-auto max-h-[70vh] links-scroll-area">
-          {/* Tech Corner Accents */}
-          <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-cyan-400/80 rounded-tl-2xl" />
-          <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-cyan-400/30 rounded-tr-2xl" />
-          <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-cyan-400/30 rounded-bl-2xl" />
-          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-cyan-400/80 rounded-br-2xl" />
+        <div className="relative backdrop-blur-xl bg-slate-950/45 rounded-2xl border border-cyan-500/15 p-4 sm:p-6 shadow-[0_0_50px_rgba(6,182,212,0.08),inset_0_0_24px_rgba(6,182,212,0.03)] overflow-y-auto max-h-[70vh] links-scroll-area">
+          {/* Tech Corner Accents - inset on mobile, full-bleed on larger screens */}
+          <div className="absolute top-2 left-2 sm:top-0 sm:left-0 w-3 h-3 sm:w-4 sm:h-4 border-t-2 border-l-2 border-cyan-400/80 rounded-tl-2xl" />
+          <div className="absolute top-2 right-2 sm:top-0 sm:right-0 w-3 h-3 sm:w-4 sm:h-4 border-t-2 border-r-2 border-cyan-400/30 rounded-tr-2xl" />
+          <div className="absolute bottom-2 left-2 sm:bottom-0 sm:left-0 w-3 h-3 sm:w-4 sm:h-4 border-b-2 border-l-2 border-cyan-400/30 rounded-bl-2xl" />
+          <div className="absolute bottom-2 right-2 sm:bottom-0 sm:right-0 w-3 h-3 sm:w-4 sm:h-4 border-b-2 border-r-2 border-cyan-400/80 rounded-br-2xl" />
 
           <h2 className="text-white font-semibold mb-4">Your Links</h2>
 
@@ -559,14 +559,14 @@ function DashboardPage() {
                         )}
 
                         {/* Click count, date, and action buttons */}
-                        <div className="flex items-center gap-4 mt-3">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mt-3">
                           <span className="text-emerald-400 text-xs font-medium">
                             {link.clickCount} clicks
                           </span>
                           <span className="text-slate-500 text-xs">
                             {new Date(link.createdAt).toLocaleDateString()}
                           </span>
-                          <div className="ml-auto flex gap-2">
+                          <div className="ml-auto sm:ml-0 flex gap-2 flex-shrink-0">
                             <button
                               onClick={() => handleEdit(link)}
                               className="text-xs text-slate-400 hover:text-cyan-400 border border-slate-800 hover:border-cyan-500/50 px-3 py-1 rounded-lg transition-all uppercase tracking-wide"
