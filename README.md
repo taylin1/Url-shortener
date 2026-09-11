@@ -8,22 +8,22 @@ A URL shortener built with React (Vite) on the client and Express on the server,
 link-shortener/
 ├── client/                  # React frontend
 │   ├── src/
-│   │   ├── lib/            # Supabase client
-│   │   ├── components/     # Reusable components
-│   │   ├── pages/          # Page components
+│   │   ├── supabaseClient.js  # Supabase client
+│   │   ├── components/        # Reusable components
+│   │   ├── pages/             # Page components
 │   │   ├── App.jsx
 │   │   └── main.jsx
-│   ├── .env.local          # Environment variables
+│   ├── .env.local           # Environment variables
 │   └── package.json
 │
 ├── server/                  # Express API
 │   ├── src/
-│   │   ├── routes/         # API routes
-│   │   ├── middleware/      # Auth middleware
-│   │   ├── lib/            # Supabase client (service role)
+│   │   ├── routes/          # API routes
+│   │   ├── middleware/       # Auth middleware
+│   │   ├── supabaseClient.js # Supabase client (service role)
 │   │   └── index.js
-│   ├── tests/              # Tests
-│   ├── .env                # Environment variables
+│   ├── tests/               # Tests
+│   ├── .env                 # Environment variables
 │   └── package.json
 │
 └── README.md
@@ -46,13 +46,8 @@ cd ../server && npm install
 
 2. Set up environment variables:
 ```bash
-# Client
-cp client/.env.example client/.env.local
-# Edit client/.env.local with your Supabase credentials
-
-# Server
-cp server/.env.example server/.env
-# Edit server/.env with your Supabase credentials
+# Client — edit client/.env.local with your Supabase credentials
+# Server — edit server/.env with your Supabase credentials
 ```
 
 3. Start development servers:
@@ -64,6 +59,8 @@ npm run dev
 
 - `POST /api/shorten` - Create a short link
 - `GET /api/links` - Get user's links
+- `PUT /api/links/:id` - Update a link
+- `DELETE /api/links/:id` - Delete a link
 - `GET /:code` - Redirect to original URL
 
 ## Tech Stack
