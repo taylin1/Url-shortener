@@ -1,14 +1,24 @@
 import { useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  // Read query params — used to detect the redirect after a successful
+  // password reset (/login?reset=success). We read it once at mount so
+  // no effect is needed, and "Continue to login" can dismiss the banner.
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
+  // Success banner shown after the user resets their password
+  const [resetSuccess, setResetSuccess] = useState(
+    function () {
+      return searchParams.get('reset') === 'success';
+    }
+  );
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -26,6 +36,32 @@ export default function LoginPage() {
       navigate('/dashboard');
 
     }
+  }
+
+  // If the user just finished resetting their password, show a confirmation
+  // banner instead of the full login page
+  if (resetSuccess) {
+    return (
+      <div className="relative min-h-screen w-full flex items-center justify-center bg-[#030712] text-slate-100 overflow-hidden font-sans select-none">
+        <div className="w-full max-w-[420px] px-6 relative z-10 mx-4">
+          <div className="relative backdrop-blur-xl bg-slate-950/45 rounded-2xl border border-cyan-500/15 p-8 text-center">
+            <div className="text-4xl mb-4">✅</div>
+            <h1 className="text-xl font-bold uppercase tracking-wider text-slate-100 mb-2">
+              Password Updated
+            </h1>
+            <p className="text-sm text-slate-400 mb-6">
+              Your password has been reset. Log in with your new password.
+            </p>
+            <button
+              onClick={() => setResetSuccess(false)}
+              className="text-sm text-cyan-400/80 hover:text-cyan-400 font-bold hover:underline transition-colors"
+            >
+              Continue to login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -161,6 +197,16 @@ export default function LoginPage() {
                   className="w-full bg-slate-950/60 border border-slate-800 text-slate-100 placeholder-slate-600 px-4 py-3 rounded-lg text-sm transition-all outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
                 />
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1.5px] bg-cyan-400/85 transition-all duration-300 group-focus-within:w-[calc(100%-8px)]" />
+              </div>
+              {/* Forgot password link */}
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => navigate('/forgot-password')}
+                  className="text-xs text-slate-400 hover:text-cyan-400 transition-colors"
+                >
+                  Forgot password?
+                </button>
               </div>
             </div>
 
